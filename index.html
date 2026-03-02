@@ -7,13 +7,10 @@ fetch("./Main.csv")
     .then(data => {
 
         const lines = data.trim().split(/\r?\n/);
-        const headers = lines[0].split(",");
 
         for (let i = 1; i < lines.length; i++) {
 
-            // Proper CSV split (handles commas inside quotes)
             const cols = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-
             if (!cols || cols.length < 5) continue;
 
             allData.push({
@@ -30,22 +27,22 @@ fetch("./Main.csv")
     .catch(err => console.error("CSV Load Error:", err));
 
 
+// 🔹 FIXED CHAPTERS 1–18
 function loadChapters() {
 
     const chapterSelect = document.getElementById("chapterSelect");
     chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
 
-    const chapters = [...new Set(allData.map(v => v.chapter))];
-
-    chapters.forEach(ch => {
+    for (let i = 1; i <= 18; i++) {
         const option = document.createElement("option");
-        option.value = ch;
-        option.textContent = ch;   // exactly as CSV
+        option.value = i.toString();
+        option.textContent = "Chapter " + i;
         chapterSelect.appendChild(option);
-    });
+    }
 }
 
 
+// 🔹 LOAD VERSES BASED ON SELECTED CHAPTER
 document.getElementById("chapterSelect").addEventListener("change", function () {
 
     const selectedChapter = this.value;
@@ -53,12 +50,19 @@ document.getElementById("chapterSelect").addEventListener("change", function () 
 
     verseSelect.innerHTML = '<option value="">Select Verse</option>';
 
-    const filteredVerses = allData.filter(v => v.chapter === selectedChapter);
+    if (!selectedChapter) {
+        clearOutput();
+        return;
+    }
+
+    const filteredVerses = allData
+        .filter(v => v.chapter === selectedChapter)
+        .sort((a, b) => Number(a.verse) - Number(b.verse));
 
     filteredVerses.forEach(v => {
         const option = document.createElement("option");
         option.value = v.verse;
-        option.textContent = v.verse;   // exactly as CSV
+        option.textContent = "Verse " + v.verse;
         verseSelect.appendChild(option);
     });
 
@@ -70,6 +74,7 @@ document.getElementById("verseSelect").addEventListener("change", showVerse);
 document.getElementById("languageSelect").addEventListener("change", showVerse);
 
 
+// 🔹 SHOW VERSE DATA
 function showVerse() {
 
     const chapter = document.getElementById("chapterSelect").value;
@@ -89,6 +94,7 @@ function showVerse() {
 }
 
 
+// 🔹 CLEAR OUTPUT WHEN CHAPTER CHANGES
 function clearOutput() {
     document.getElementById("sanskrit").innerText = "";
     document.getElementById("translation").innerText = "";
