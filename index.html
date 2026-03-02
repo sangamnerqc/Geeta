@@ -37,23 +37,13 @@
 
 let allData = [];
 
-// Load Chapters 1–18
-const chapterSelect = document.getElementById("chapterSelect");
-for (let i = 1; i <= 18; i++) {
-  let option = document.createElement("option");
-  option.value = i;
-  option.textContent = "Chapter " + i;
-  chapterSelect.appendChild(option);
-}
-
-// Fetch CSV
+// Load CSV
 fetch("Main.csv")
 .then(response => response.text())
 .then(text => {
 
   const rows = text.trim().split(/\r?\n/);
 
-  // Skip header row
   for (let i = 1; i < rows.length; i++) {
 
     const cols = rows[i].split(",");
@@ -61,55 +51,86 @@ fetch("Main.csv")
     if (cols.length >= 7) {
 
       allData.push({
-        chapter: cols[2].trim(),       // 3rd column
-        verse: cols[3].trim(),         // 4th column
-        sanskrit: cols[4].trim(),      // 5th column
-        hindi: cols[5].trim(),         // 6th column
-        english: cols[6].trim()        // 7th column
+        chapter: cols[2].trim(),   // 3rd column
+        verse: cols[3].trim(),     // 4th column
+        sanskrit: cols[4].trim(),
+        hindi: cols[5].trim(),
+        english: cols[6].trim()
       });
 
     }
   }
 
+  loadChapters();   // Load chapters AFTER CSV loads
+
 })
 .catch(error => {
-  alert("Error loading CSV file");
+  alert("Error loading CSV");
   console.log(error);
 });
 
 
-// When Chapter Changes
-chapterSelect.addEventListener("change", function() {
+// Dynamically Load Chapters from CSV
+function loadChapters() {
 
+  const chapterSelect = document.getElementById("chapterSelect");
+
+  // Get unique chapter numbers
+  const uniqueChapters = [...new Set(allData.map(item => item.chapter))];
+
+  uniqueChapters
+    .sort((a,b) => Number(a) - Number(b))
+    .forEach(ch => {
+
+      let option = document.createElement("option");
+      option.value = ch;
+      option.textContent = "Chapter " + ch;
+      chapterSelect.appendChild(option);
+
+    });
+}
+
+
+// When Chapter Changes
+document.getElementById("chapterSelect").addEventListener("change", function() {
+
+  const selectedChapter = this.value;
   const verseSelect = document.getElementById("verseSelect");
+
   verseSelect.innerHTML = '<option value="">Select Verse</option>';
 
   document.getElementById("sanskrit").textContent = "";
   document.getElementById("translation").textContent = "";
 
-  if (!this.value) return;
+  if (!selectedChapter) return;
 
-  const verses = allData
-    .filter(item => item.chapter === this.value)
-    .sort((a,b) => Number(a.verse) - Number(b.verse));
+  // Get verses only for selected chapter
+  const filteredVerses = allData
+    .filter(item => item.chapter === selectedChapter);
 
-  verses.forEach(v => {
-    let option = document.createElement("option");
-    option.value = v.verse;
-    option.textContent = "Verse " + v.verse;
-    verseSelect.appendChild(option);
-  });
+  const uniqueVerses = [...new Set(filteredVerses.map(item => item.verse))];
+
+  uniqueVerses
+    .sort((a,b) => Number(a) - Number(b))
+    .forEach(v => {
+
+      let option = document.createElement("option");
+      option.value = v;
+      option.textContent = "Verse " + v;
+      verseSelect.appendChild(option);
+
+    });
 
 });
 
 
-// When Verse or Language Changes
+// Show Verse
 document.getElementById("verseSelect").addEventListener("change", showVerse);
 document.getElementById("languageSelect").addEventListener("change", showVerse);
 
 function showVerse() {
 
-  const chapter = chapterSelect.value;
+  const chapter = document.getElementById("chapterSelect").value;
   const verse = document.getElementById("verseSelect").value;
   const language = document.getElementById("languageSelect").value;
 
