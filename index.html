@@ -9,9 +9,17 @@
 
 <h2>Bhagavad Gita Explorer</h2>
 
-<select id="chapterSelect"></select>
-<select id="verseSelect"></select>
+<!-- Chapter Dropdown -->
+<select id="chapterSelect">
+  <option value="">Select Chapter</option>
+</select>
 
+<!-- Verse Dropdown -->
+<select id="verseSelect">
+  <option value="">Select Verse</option>
+</select>
+
+<!-- Language Dropdown -->
 <select id="languageSelect">
   <option value="english">English</option>
   <option value="hindi">Hindi</option>
@@ -20,6 +28,7 @@
 <div id="output">
   <h3>Sanskrit:</h3>
   <p id="sanskrit"></p>
+
   <h3>Translation:</h3>
   <p id="translation"></p>
 </div>
@@ -28,49 +37,48 @@
 
 let allData = [];
 
-// Load chapters 1–18 immediately
+// Load Chapters 1–18
 const chapterSelect = document.getElementById("chapterSelect");
-chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
-
 for (let i = 1; i <= 18; i++) {
-  let opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = "Chapter " + i;
-  chapterSelect.appendChild(opt);
+  let option = document.createElement("option");
+  option.value = i;
+  option.textContent = "Chapter " + i;
+  chapterSelect.appendChild(option);
 }
 
-// Load CSV safely
+// Fetch CSV
 fetch("Main.csv")
-  .then(res => {
-    if (!res.ok) throw new Error("CSV not found");
-    return res.text();
-  })
-  .then(text => {
+.then(response => response.text())
+.then(text => {
 
-    const rows = text.trim().split(/\r?\n/);
+  const rows = text.trim().split(/\r?\n/);
 
-    for (let i = 1; i < rows.length; i++) {
-      let cols = rows[i].split(",");
+  // Skip header row
+  for (let i = 1; i < rows.length; i++) {
 
-      if (cols.length >= 5) {
-        allData.push({
-          chapter: cols[0].trim(),
-          verse: cols[1].trim(),
-          sanskrit: cols[2].trim(),
-          english: cols[3].trim(),
-          hindi: cols[4].trim()
-        });
-      }
+    const cols = rows[i].split(",");
+
+    if (cols.length >= 7) {
+
+      allData.push({
+        chapter: cols[2].trim(),       // 3rd column
+        verse: cols[3].trim(),         // 4th column
+        sanskrit: cols[4].trim(),      // 5th column
+        hindi: cols[5].trim(),         // 6th column
+        english: cols[6].trim()        // 7th column
+      });
+
     }
+  }
 
-  })
-  .catch(err => {
-    alert("Error loading CSV. Check file name and location.");
-    console.log(err);
-  });
+})
+.catch(error => {
+  alert("Error loading CSV file");
+  console.log(error);
+});
 
 
-// Chapter change
+// When Chapter Changes
 chapterSelect.addEventListener("change", function() {
 
   const verseSelect = document.getElementById("verseSelect");
@@ -82,36 +90,40 @@ chapterSelect.addEventListener("change", function() {
   if (!this.value) return;
 
   const verses = allData
-    .filter(v => v.chapter === this.value)
+    .filter(item => item.chapter === this.value)
     .sort((a,b) => Number(a.verse) - Number(b.verse));
 
   verses.forEach(v => {
-    let opt = document.createElement("option");
-    opt.value = v.verse;
-    opt.textContent = "Verse " + v.verse;
-    verseSelect.appendChild(opt);
+    let option = document.createElement("option");
+    option.value = v.verse;
+    option.textContent = "Verse " + v.verse;
+    verseSelect.appendChild(option);
   });
+
 });
 
 
-// Verse or language change
+// When Verse or Language Changes
 document.getElementById("verseSelect").addEventListener("change", showVerse);
 document.getElementById("languageSelect").addEventListener("change", showVerse);
 
 function showVerse() {
 
-  const ch = chapterSelect.value;
-  const vs = document.getElementById("verseSelect").value;
-  const lang = document.getElementById("languageSelect").value;
+  const chapter = chapterSelect.value;
+  const verse = document.getElementById("verseSelect").value;
+  const language = document.getElementById("languageSelect").value;
 
-  if (!ch || !vs) return;
+  if (!chapter || !verse) return;
 
-  const match = allData.find(v => v.chapter === ch && v.verse === vs);
+  const match = allData.find(item =>
+    item.chapter === chapter && item.verse === verse
+  );
 
   if (match) {
     document.getElementById("sanskrit").textContent = match.sanskrit;
-    document.getElementById("translation").textContent = match[lang];
+    document.getElementById("translation").textContent = match[language];
   }
+
 }
 
 </script>
