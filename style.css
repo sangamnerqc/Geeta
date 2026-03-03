@@ -1,27 +1,99 @@
+/* Import Elegant Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
 body {
-    font-family: Arial;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
     text-align: center;
     padding: 40px;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #fff5e6, #ffe0b3);
+    min-height: 100vh;
 }
 
+/* Heading Style */
 h2 {
     margin-bottom: 30px;
+    font-size: 32px;
+    font-weight: 600;
+    color: #d35400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
+/* Dropdown Styling */
 select {
-    padding: 8px;
-    margin: 10px;
+    padding: 12px 18px;
+    margin: 12px;
     font-size: 16px;
+    border-radius: 30px;
+    border: 2px solid #f39c12;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
 }
 
+select:hover {
+    background-color: #fff0db;
+    transform: scale(1.05);
+}
+
+select:focus {
+    border-color: #e67e22;
+    box-shadow: 0px 0px 8px rgba(243, 156, 18, 0.6);
+}
+
+/* Output Card Style */
 #output {
-    margin-top: 30px;
-    padding: 20px;
+    margin-top: 40px;
+    padding: 30px;
     background: white;
-    width: 60%;
+    width: 65%;
     margin-left: auto;
     margin-right: auto;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    box-shadow: 0px 15px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#output:hover {
+    transform: translateY(-8px);
+    box-shadow: 0px 20px 40px rgba(0,0,0,0.15);
+}
+
+/* Verse Text Styling */
+#output p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}
+
+/* Button Style (Optional if you add buttons later) */
+button {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 30px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #e67e22, #d35400);
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #output {
+        width: 90%;
+        padding: 20px;
+    }
+
+    select {
+        width: 80%;
+    }
 }
