@@ -5,45 +5,49 @@
 <title>Bhagavad Gita Explorer</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
+<body>
+
+<!-- Main Content -->
+<div class="container">
+
+    <h2>🕉 Bhagavad Gita Explorer</h2>
+
+    <div class="controls">
+
+        <select id="chapterSelect" disabled>
+            <option value="">Select Chapter</option>
+        </select>
+
+        <select id="verseSelect" disabled>
+            <option value="">Select Verse</option>
+        </select>
+
+        <select id="languageSelect">
+            <option value="english">English</option>
+            <option value="hindi">Hindi</option>
+        </select>
+
+    </div>
+
+    <div id="output">
+        <h3 id="reference"></h3>
+
+        <h3>Sanskrit</h3>
+        <p id="sanskrit"></p>
+
+        <h3>Translation</h3>
+        <p id="translation"></p>
+    </div>
+
+    <div id="loading">Loading Bhagavad Gita...</div>
+
+</div>
+
+<!-- Footer (OUTSIDE container) -->
 <footer class="footer">
     गीता सेवी अजित करंजेकर
 </footer>
-<body>
-
-<div class="container">
-
-<h2>🕉 Bhagavad Gita Explorer</h2>
-
-<div class="controls">
-
-<select id="chapterSelect" disabled>
-  <option value="">Select Chapter</option>
-</select>
-
-<select id="verseSelect" disabled>
-  <option value="">Select Verse</option>
-</select>
-
-<select id="languageSelect">
-  <option value="english">English</option>
-  <option value="hindi">Hindi</option>
-</select>
-
-</div>
-
-<div id="output">
-  <h3 id="reference"></h3>
-
-  <h3>Sanskrit</h3>
-  <p id="sanskrit"></p>
-
-  <h3>Translation</h3>
-  <p id="translation"></p>
-</div>
-
-<div id="loading">Loading Bhagavad Gita...</div>
-
-</div>
 
 <script>
 
@@ -54,7 +58,7 @@ const verseSelect = document.getElementById("verseSelect");
 const languageSelect = document.getElementById("languageSelect");
 const loadingDiv = document.getElementById("loading");
 
-// CSV Safe Parser (Handles commas inside quotes)
+// CSV Safe Parser
 function parseCSV(text) {
   const rows = text.split(/\r?\n/);
   const data = [];
@@ -88,7 +92,6 @@ fetch("Main.csv")
   }
 
   loadChapters();
-
   chapterSelect.disabled = false;
   loadingDiv.style.display = "none";
 
@@ -124,7 +127,6 @@ chapterSelect.addEventListener("change", function() {
   if (!this.value) return;
 
   const filtered = allData.filter(item => item.chapter === this.value);
-
   const uniqueVerses = [...new Set(filtered.map(item => item.verse))];
 
   uniqueVerses
