@@ -7,132 +7,144 @@
 </head>
 <body>
 
-<h2>Bhagavad Gita Explorer</h2>
+<div class="container">
 
-<!-- Chapter Dropdown -->
-<select id="chapterSelect">
+<h2>🕉 Bhagavad Gita Explorer</h2>
+
+<div class="controls">
+
+<select id="chapterSelect" disabled>
   <option value="">Select Chapter</option>
 </select>
 
-<!-- Verse Dropdown -->
-<select id="verseSelect">
+<select id="verseSelect" disabled>
   <option value="">Select Verse</option>
 </select>
 
-<!-- Language Dropdown -->
 <select id="languageSelect">
   <option value="english">English</option>
   <option value="hindi">Hindi</option>
 </select>
 
+</div>
+
 <div id="output">
-  <h3>Sanskrit:</h3>
+  <h3 id="reference"></h3>
+
+  <h3>Sanskrit</h3>
   <p id="sanskrit"></p>
 
-  <h3>Translation:</h3>
+  <h3>Translation</h3>
   <p id="translation"></p>
+</div>
+
+<div id="loading">Loading Bhagavad Gita...</div>
+
 </div>
 
 <script>
 
 let allData = [];
 
+const chapterSelect = document.getElementById("chapterSelect");
+const verseSelect = document.getElementById("verseSelect");
+const languageSelect = document.getElementById("languageSelect");
+const loadingDiv = document.getElementById("loading");
+
+// CSV Safe Parser (Handles commas inside quotes)
+function parseCSV(text) {
+  const rows = text.split(/\r?\n/);
+  const data = [];
+
+  for (let i = 1; i < rows.length; i++) {
+    let cols = rows[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+    if (!cols || cols.length < 7) continue;
+
+    data.push({
+      chapter: cols[2].replace(/"/g, '').trim(),
+      verse: cols[3].replace(/"/g, '').trim(),
+      sanskrit: cols[4].replace(/"/g, '').trim(),
+      hindi: cols[5].replace(/"/g, '').trim(),
+      english: cols[6].replace(/"/g, '').trim()
+    });
+  }
+
+  return data;
+}
+
 // Load CSV
 fetch("Main.csv")
 .then(response => response.text())
 .then(text => {
 
-  const rows = text.trim().split(/\r?\n/);
+  allData = parseCSV(text);
 
-  for (let i = 1; i < rows.length; i++) {
-
-    const cols = rows[i].split(",");
-
-    if (cols.length >= 7) {
-
-      allData.push({
-        chapter: cols[2].trim(),   // 3rd column
-        verse: cols[3].trim(),     // 4th column
-        sanskrit: cols[4].trim(),
-        hindi: cols[5].trim(),
-        english: cols[6].trim()
-      });
-
-    }
+  if (allData.length === 0) {
+    loadingDiv.textContent = "No data found in CSV.";
+    return;
   }
 
-  loadChapters();   // Load chapters AFTER CSV loads
+  loadChapters();
+
+  chapterSelect.disabled = false;
+  loadingDiv.style.display = "none";
 
 })
 .catch(error => {
-  alert("Error loading CSV");
-  console.log(error);
+  loadingDiv.textContent = "Error loading CSV file.";
+  console.error(error);
 });
 
-
-// Dynamically Load Chapters from CSV
+// Load Chapters
 function loadChapters() {
 
-  const chapterSelect = document.getElementById("chapterSelect");
-
-  // Get unique chapter numbers
   const uniqueChapters = [...new Set(allData.map(item => item.chapter))];
 
   uniqueChapters
     .sort((a,b) => Number(a) - Number(b))
     .forEach(ch => {
-
       let option = document.createElement("option");
       option.value = ch;
       option.textContent = "Chapter " + ch;
       chapterSelect.appendChild(option);
-
     });
 }
 
-
-// When Chapter Changes
-document.getElementById("chapterSelect").addEventListener("change", function() {
-
-  const selectedChapter = this.value;
-  const verseSelect = document.getElementById("verseSelect");
+// Chapter Change
+chapterSelect.addEventListener("change", function() {
 
   verseSelect.innerHTML = '<option value="">Select Verse</option>';
+  verseSelect.disabled = true;
 
-  document.getElementById("sanskrit").textContent = "";
-  document.getElementById("translation").textContent = "";
+  clearOutput();
 
-  if (!selectedChapter) return;
+  if (!this.value) return;
 
-  // Get verses only for selected chapter
-  const filteredVerses = allData
-    .filter(item => item.chapter === selectedChapter);
+  const filtered = allData.filter(item => item.chapter === this.value);
 
-  const uniqueVerses = [...new Set(filteredVerses.map(item => item.verse))];
+  const uniqueVerses = [...new Set(filtered.map(item => item.verse))];
 
   uniqueVerses
     .sort((a,b) => Number(a) - Number(b))
     .forEach(v => {
-
       let option = document.createElement("option");
       option.value = v;
       option.textContent = "Verse " + v;
       verseSelect.appendChild(option);
-
     });
 
+  verseSelect.disabled = false;
 });
 
-
 // Show Verse
-document.getElementById("verseSelect").addEventListener("change", showVerse);
-document.getElementById("languageSelect").addEventListener("change", showVerse);
+verseSelect.addEventListener("change", showVerse);
+languageSelect.addEventListener("change", showVerse);
 
 function showVerse() {
 
-  const chapter = document.getElementById("chapterSelect").value;
-  const verse = document.getElementById("verseSelect").value;
-  const language = document.getElementById("languageSelect").value;
+  const chapter = chapterSelect.value;
+  const verse = verseSelect.value;
+  const language = languageSelect.value;
 
   if (!chapter || !verse) return;
 
@@ -141,10 +153,19 @@ function showVerse() {
   );
 
   if (match) {
+
+    document.getElementById("reference").textContent =
+      "Chapter " + chapter + " • Verse " + verse;
+
     document.getElementById("sanskrit").textContent = match.sanskrit;
     document.getElementById("translation").textContent = match[language];
   }
+}
 
+function clearOutput() {
+  document.getElementById("reference").textContent = "";
+  document.getElementById("sanskrit").textContent = "";
+  document.getElementById("translation").textContent = "";
 }
 
 </script>
